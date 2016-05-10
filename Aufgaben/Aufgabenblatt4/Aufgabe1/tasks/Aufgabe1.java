@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /******************************************************************************
 
     AUFGABENBLATT 4 - Allgemeine Informationen
@@ -41,9 +43,23 @@
 
     Zusatzfragen: 
     1. Welche Vor- und Nachteile hat iter im Vergleich zu rec?
+
+        rec: Leichter zu implementieren aber wird zu einen Stack-Overflow führen
+        wenn es zu viele Rekursionen gibt. Speicherverbrauch ist nicht linear.
+
+        iter: Schwieriger zu imeplementieren. Absehbarer Resourcenverbrauch.
+
     2. Ist int als Ergebnistyp zur Lösung dieser Aufgabe geeignet? Warum? Welche
-    Alternative(n) gibt es? 
-    3. Warum ist double kein geeigneter Ergebnistyp für diese Aufgabe? 
+    Alternative(n) gibt es?
+
+        Ein int typ kann ganze Zahlen bis 2^32-1 speichern, sollte dies nicht
+        ausreichen, kann auf long (bis 2^64-1) umgestiegen werden.
+
+    3. Warum ist double kein geeigneter Ergebnistyp für diese Aufgabe?
+
+        double ist ein floating data type und wird somit nicht benötigt und würde
+        bloß ein Overhead darstellen.
+
     4. Vermutlich enthält Ihre erste Implementierung
     von rec zwei rekursive Aufrufe. Versuchen Sie rec so abzuändern, dass nur
     ein rekursiver Aufruf nötig ist. Wie wirkt sich die Änderung auf die Vor-
@@ -52,12 +68,59 @@
     Arrays nötig. Man könnte sie aber (auf unterschiedliche Arten) verwenden.
     Welche Vor- und Nachteile ergeben sich in dieser Aufgabe aus der Verwendung
     von Arrays?
+
+        Array Längen sind in Java statisch, sodass wenn ein Element hinzugefügt wird,
+        ein komplett neues Array erstellt werden muss. Oder man allokiert das
+        Array bereits für eine gewisse Anzahl an Elementen und erstellt ein neues
+        wenn die Grenze erreicht wird.
+
+        Arrays können aber beim Lösen der Aufgabe hilfreich sein, da somit der
+        rekursive Pseudocode am einfachsten iterativ nachgebaut werden kann.
 */
+
 public class Aufgabe1 {
+
+    public static int rec (int n) {
+        if (n < 0)
+            return 0;
+
+        if ((n == 0) || (n == 1))
+            return 1;
+
+        return rec(n - 1) + rec(n - 2) + 1;
+    }
+
+    public static int iter (int n) {
+        int[] array = new int[1];
+        int last = 0;
+        array[0] = n;
+
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] > 1) {
+                array = Arrays.copyOf(array, array.length + 2);
+                array[last+1] = array[i] - 1;
+                array[last+2] = array[i] - 2;
+                last += 2;
+            }
+        }
+
+        return array.length;
+    }
 
     // invokes iter as well as rec with all integers from 0 to 30 and prints
     // the results (without empty lines or other output)
     public static void main(String[] args) {
-        // TODO: Implementation is your task
+
+        for (int i = 0; i <= 30; i++) {
+            int rec_res = rec(i);
+
+            System.out.println("rec (" + String.valueOf(i) + "): " + String.valueOf(rec_res));
+        }
+
+        for (int i = 0; i <= 30; i++) {
+            int rec_res = iter(i);
+
+            System.out.println("iter (" + String.valueOf(i) + "): " + String.valueOf(rec_res));
+        }
     }
 }

@@ -38,15 +38,74 @@
     1. Warum kann man in 'printArray' forEach-Schleifen (also Schleifen der
     Form for(... : ...) ...) verwenden, in 'createArray' und 'halveArray' aber
     nicht?
+
+        Weil bei forEach nicht direkt auf das Element des Array zugegriffen wird,
+        sondern auf eine Kopie des Elements. Verändert man nun dieses Element,
+        ändert sich bloß die Kopie.
+
     2. Warum ist es möglich, dass 'halveArray' kein Ergebnis zurückgibt, die
     Auswirkungen der Methode aber dennoch sichtbar werden?
+
+        Das Array wird als Referenzparameter übergeben und wird somit von der
+        Funktion direkt geändert.
+
     3. Woran könnte man feststellen, ob die Lösung richtig ist, obwohl jeder
     Testlauf andere Ergebnisse liefert?
+
+        Man erzeugt random Nummern aus einem statischem Seed, so kann man
+        die Zahlenfolge immer wieder wiederholen.
+        Siehe auch Aufgabe2.DEBUG und die auskommentierte Zeile mit
+        'java.lang.Math.random()'.
 */
+
+import java.util.Random;
+
 public class Aufgabe2 {
+
+    public static final boolean DEBUG = false;
+
+    public static float[] createArray (int n) {
+        float[] array = new float[n];
+
+        Random rand_gen = (Aufgabe2.DEBUG) ? new Random(0) : new Random();
+
+        for (int i = 0; i < n; i++) {
+
+            //float rand = (float) java.lang.Math.random();
+            float rand = rand_gen.nextFloat();
+
+            array[i] = ((int) (rand * 1000)) / 10.0f;
+        }
+
+        return array;
+    }
+
+    public static void printArray (float[] array, int n) {
+        int[] count = new int[n];
+
+        float size = 100.0f / n;
+
+        for (float elem: array) {
+            int index = (int) (elem / size);
+            count[index] += 1;
+
+            if (Aufgabe2.DEBUG)
+                System.out.println("DEBUG: elem: " + String.valueOf(elem) + " index: " + String.valueOf(index));
+        }
+
+        for (int i = 0; i < n; i++) {
+            float start = i * size;
+            float end = (i * size) + size;
+
+            System.out.println("[" + String.valueOf(start) + ", " + String.valueOf(end) + "): " + String.valueOf(count[i]));
+        }
+    }
 
     // just for testing ...
     public static void main(String[] args) {
         // Implementierung von main wird nicht beurteilt
+
+        float[] array = createArray(4);
+        printArray (array, 5);
     }
 }
