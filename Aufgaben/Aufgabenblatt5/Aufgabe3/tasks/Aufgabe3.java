@@ -103,14 +103,95 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 class Game {
+    private final String name;
+    private final int num;
 
+    private Queue<String> queue = new LinkedList<>();
+    private int counter = 0;
+
+    public Game(String name, int num) {
+        assert (name != null);
+        assert (num > 1);
+
+        this.name = name;
+        this.num = num;
+    }
+
+    public void add(String playerName) {
+        queue.add(playerName);
+    }
+
+    public String next() {
+        if (queue.isEmpty())
+            return null;
+
+        String player = queue.poll();
+        this.counter++;
+
+        if (this.counter == this.num) {
+            if (queue.isEmpty()) {
+                this.counter = 0;
+                System.out.println(player + " ist der Sieger von " + this.name);
+                return null;
+            } else {
+                this.counter = 0;
+                return player;
+            }
+        } else {
+            queue.add(player);
+            return null;
+        }
+    }
 
 }
 
 public class Aufgabe3 {
 
+    private Game[] gameList;
+
+    private String[] playerList;
+    private String[] games;
+    private int[] gameNum;
+
+
+    public Aufgabe3(String[] playerList, String[] games, int[] gameNum) {
+        assert (games.length == gameNum.length);
+
+        this.playerList = playerList;
+        this.games = games;
+        this.gameNum = gameNum;
+    }
+
+    public void play(int rounds) {
+        this.gameList = new Game[games.length];
+
+        for (int i = 0; i < games.length; i++) {
+            Game game = new Game(games[i], gameNum[i]);
+
+            for (String player: playerList) {
+                game.add(player);
+            }
+
+            this.gameList[i] = game;
+        }
+
+        for (int i = 0; i < rounds; i++) {
+            for (int j = 0; j < games.length; j++) {
+                String player = gameList[j].next();
+
+                if (player != null) {
+                    int nextGame = (j+1) % (games.length - 1);
+                    gameList[nextGame].add(player);
+                }
+            }
+        }
+    }
+
     // just for testing ...
     public static void main(String[] args) {
         // Implementierung von main soll (zusätzliche) Testfälle beinhalten
+
+        Aufgabe3 match = new Aufgabe3(new String[]{"Marion", "Nadja", "Simon", "Lukas"}, new String[]{"A", "B", "C", "D"}, new int[]{4, 3, 2, 6});
+        match.play(100);
     }
 }

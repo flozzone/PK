@@ -74,14 +74,73 @@
 import java.util.Map;
 import java.util.TreeMap;
 
-class Period {
 
+class Period {
+    private String from, to;
+
+    public Period(String from, String to) {
+        this.from = from;
+        this.to = to;
+    }
+    public String from() { return this.from; }
+    public String to() { return this.to; }
+}
+
+class NeueUhrzeitPeriod {
+    private NeueUhrzeit from, to;
+
+    public NeueUhrzeitPeriod(NeueUhrzeit from, NeueUhrzeit to) {
+        this.from = from;
+        this.to = to;
+    }
+    public NeueUhrzeit from() { return this.from; }
+    public NeueUhrzeit to() { return this.to; }
 }
 
 public class Aufgabe2 {
 
+    Map<String, NeueUhrzeitPeriod> plan = new TreeMap<>();
+
+    public NeueUhrzeit from(String task) {
+        return plan.get(task).from();
+    }
+
+    public NeueUhrzeit to(String task) {
+        return plan.get(task).to();
+    }
+
+    public boolean add(String task, NeueUhrzeitPeriod period) {
+        boolean contained = false;
+        if (plan.containsKey(task))
+            contained = true;
+
+        plan.put(task, period);
+
+        return contained;
+    }
+
+    public void printPlan(NeueUhrzeit time) {
+        for (Map.Entry<String, NeueUhrzeitPeriod> entry: plan.entrySet()) {
+            NeueUhrzeitPeriod period = entry.getValue();
+            if (period.from().compareTo(time) <= 0 &&
+                    period.to().compareTo(time) >= 0) {
+                System.out.println(period.from().get() + " - " + period.to().get() + " : " + entry.getKey());
+            }
+        }
+    }
+
     // just for testing ...
     public static void main(String[] args) {
         // Implementierung von main soll Testfälle beinhalten
+
+        Aufgabe2 test = new Aufgabe2();
+
+        test.add("Wäsche waschen", new NeueUhrzeitPeriod(new NeueUhrzeit(1, 0), new NeueUhrzeit(1, 50)));
+        test.add("Morgengymnastik", new NeueUhrzeitPeriod(new NeueUhrzeit(1, 51), new NeueUhrzeit(2, 60)));
+        test.add("Fischen", new NeueUhrzeitPeriod(new NeueUhrzeit(2, 61), new NeueUhrzeit(5, 30)));
+        test.add("Essen", new NeueUhrzeitPeriod(new NeueUhrzeit(5, 31), new NeueUhrzeit(6, 00)));
+        test.add("Pfeifen", new NeueUhrzeitPeriod(new NeueUhrzeit(1, 10), new NeueUhrzeit(2, 30)));
+
+        test.printPlan(new NeueUhrzeit(1, 12));
     }
 }
