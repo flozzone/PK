@@ -49,9 +49,11 @@
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
+import java.util.Iterator;
 
 public class Aufgabe4 {
+
+    private final static char OPERAND = '%';
 
     public static boolean isOpening(char c) {
         return (c == '(' || c == '[' || c == '{') ? true : false;
@@ -69,15 +71,15 @@ public class Aufgabe4 {
         return (c >= 'a' && c <= 'z') ? true : false;
     }
 
-    public static boolean isNumber(char c) {
-        return (c == '%') ? true : false;
+    public static boolean isOperand(char c) {
+        return (c == OPERAND) ? true : false;
     }
 
     public static boolean isNumeric(char c) {
         return (c >= '0' && c <= '9') ? true : false;
     }
 
-    public static int getNumber(String text, int at) {
+    public static int readNumber(String text, int at) {
         int counter = 0;
 
         for (int i = at; i < text.length(); i++) {
@@ -90,16 +92,24 @@ public class Aufgabe4 {
         return counter;
     }
 
+    private static void printStack(Deque<Character> stack) {
+        Iterator<Character> it = stack.descendingIterator();
+        System.out.print("Stack: ");
+        while (it.hasNext()) {
+            char c = it.next();
+            System.out.print(c);
+        }
+        System.out.println();
+    }
+
     public static boolean check(String text) {
         Deque<Character> stack = new ArrayDeque<>();
 
-        System.out.println();
-        System.out.println("check: " + text);
+        int i = 0;
+        while (i < text.length()) {
+            char c = text.charAt(i++);
 
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-
-            System.out.print(c);
+            //System.out.println(c);
 
             if (isOpening(c)) {
 
@@ -119,83 +129,114 @@ public class Aufgabe4 {
 
                 char d = stack.removeFirst();
 
-                if (isNumber(d) || isVariable(d))
+                if (isOperand(d)) {
+                    if (stack.isEmpty())
+                        return false;
+
                     d = stack.removeFirst();
+                }
 
                 if (c == ')' && d != '(')
                     return false;
 
-                if (c == ']' && d != '[')
+                if (c == ']' && d != '[') {
                     return false;
+                }
 
                 if (c == '}' && d != '{')
                     return false;
+
+                stack.addFirst(OPERAND);
             }
 
             if (isVariable(c)) {
 
                 if (!stack.isEmpty()) {
-                    char d = stack.removeFirst();
+                    char d = stack.getFirst();
 
-                    if (isOpening(d))
-                        stack.addFirst(d);
+                    if (isOperator(d)) {
+                        stack.removeFirst();
+                    }
 
                     if (!isOperator(d) && !isOpening(d))
                         return false;
                 }
 
-                stack.addFirst(c);
+                stack.addFirst(OPERAND);
             }
 
             if (isNumeric(c)) {
-                int jump = getNumber(text, i);
-                stack.addFirst('%');
-                i += jump - 1;
-                continue;
+                int jump = readNumber(text, i);
+                i += jump;
+
+                if (!stack.isEmpty()) {
+                    char d = stack.getFirst();
+
+                    if (isOperator(d)) {
+                        stack.removeFirst();
+                        stack.addFirst(OPERAND);
+                    }
+                }
             }
 
             if (isOperator(c)) {
-                //if (stack.isEmpty())
-                //    return false;
+
+                if (stack.isEmpty())
+                    return false;
 
                 char d = stack.removeFirst();
 
-                if (!isClosing(d) && !isNumber(d) && !isVariable(d))
+                if (!isClosing(d) && !isOperand(d) && !isVariable(d))
                     return false;
 
-                /*
-                char e = text.charAt(++i);
-                if (isNumeric(e)) {
-                    int jump = getNumber(text, i);
-                    e = '%';
-                    i += jump;
-                }
-
-                if (!isVariable(e) && !isNumber(e))
-                    return false;
-                    */
+                stack.addFirst(c);
             }
         }
 
-        if (stack.isEmpty())
-            return true;
+        if (!stack.isEmpty()) {
+            char d = stack.removeFirst();
+            if (d == OPERAND) {
+                if (!stack.isEmpty())
+                    return false;
+            } else return false;
+        }
 
-        return false;
+        return true;
+    }
+
+    public static boolean test(String text, boolean expect) {
+        boolean ret;
+
+        System.out.println("---------------------");
+        System.out.println("Test ("+String.valueOf(expect)+"): '" + text + "'");
+
+        ret = Aufgabe4.check(text);
+
+        System.out.println();
+
+        if (ret != expect) {
+            System.out.println("Test FAILED (ret: " + String.valueOf(ret)+" !=  expect: " + String.valueOf(expect) + ")");
+
+            assert false;
+        } else System.out.println("Test PASSED");
+
+        return ret;
     }
 
     // just for testing ...
     public static void main(String[] args) {
         // Implementierung von main soll (zusätzliche) Testfälle beinhalten
 
-        assert (Aufgabe4.check("") == true);
-        assert (Aufgabe4.check("a*[a+12]") == true);
-        assert (Aufgabe4.check("a+(b)-c") == true);
-        assert (Aufgabe4.check("a+{b+8+(b+c)}/a") == true);
-        assert (Aufgabe4.check("[") == false);
-        assert (Aufgabe4.check("(}") == false);
-        assert (Aufgabe4.check("a)[]") == false);
-        assert (Aufgabe4.check("([)]") == false);
-        assert (Aufgabe4.check("][") == false);
+        test("", true);
+        test("a*[a+12]", true);
+        test("a+(b)-c", true);
+        test("a+{b+8+(b+c)}/a", true);
+        test("[", false);
+        test("(}", false);
+        test("a)[]", false);
+        test("([)]", false);
+        test("][", false);
+        test("[a+1231233566*3/1]-(a+{123})", true);
 
     }
 }
